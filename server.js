@@ -20,11 +20,7 @@ const app = express();
 // app.use(express.json());
 
 
-const allowedOrigins = [
-    "https://thesumaya.com/",
-  "http://localhost:5173"
-];
-
+const allowedOrigins = ["https://thesumaya.com"];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
