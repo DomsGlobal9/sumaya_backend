@@ -21,8 +21,8 @@ const app = express();
 
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://thesumaya.com/" // ✅ Add this
+    "https://thesumaya.com/",
+  "http://localhost:5173"
 ];
 
 app.use(cors({
