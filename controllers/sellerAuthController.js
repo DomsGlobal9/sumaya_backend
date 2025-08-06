@@ -114,10 +114,7 @@ exports.registerSeller = async (req, res) => {
 };
 
 exports.loginSeller = async (req, res) => {
-    console.log("hellp")
-      console.log('Login endpoint called');
-  console.log('Request body:', req.body);
-  console.log('Request URL:', req.url);
+  console.log(req.body)
   const { email, password, role } = req.body;
 
   try {
