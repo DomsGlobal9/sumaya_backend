@@ -5,7 +5,7 @@ const mongoose = require("mongoose"); // ✅ Import mongoose
 
 const app = express();
 
-// // Middlewares
+// Middlewares
 // app.use(cors(   {
 //   origin: "http://localhost:5173", // or wherever your React app runs
 //   credentials: true
@@ -14,7 +14,7 @@ const app = express();
 
 // Middlewares
 // app.use(cors(   {
-//   origin: "https://thesumaya.com/", // or wherever your React app runs
+//   origin: "https://thesumaya.com", // or wherever your React app runs
 //   credentials: true
 // }));
 // app.use(express.json());
@@ -32,8 +32,9 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(express.json());
 
-
+app.options("*", cors());
 
 
 

@@ -11,7 +11,7 @@ const {
 } = require('../controllers/sellerAuthController');
 
 
-router.post('/register', validateSellerInput, registerSeller);
+router.post('/register', registerSeller);
 router.post('/login', loginSeller); 
 router.post('/seller/forgot-password', (req, res, next) => {
   console.log("✅ /seller/forgot-password route hit");

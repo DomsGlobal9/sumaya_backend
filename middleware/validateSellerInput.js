@@ -17,7 +17,7 @@ const validateSellerInput = (req, res, next) => {
     return res.status(400).json({ message: "Password must be at least 6 characters." });
   }
 
-  next(); // All good, proceed to controller
+  next(); 
 };
 
 module.exports = validateSellerInput;
