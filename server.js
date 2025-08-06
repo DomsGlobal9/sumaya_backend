@@ -13,11 +13,33 @@ const app = express();
 // app.use(express.json());
 
 // Middlewares
-app.use(cors(   {
-  origin: "https://thesumaya.com/", // or wherever your React app runs
+// app.use(cors(   {
+//   origin: "https://thesumaya.com/", // or wherever your React app runs
+//   credentials: true
+// }));
+// app.use(express.json());
+
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://thesumaya.com" // ✅ Add this
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
-app.use(express.json());
+
+
+
+
+
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI)
