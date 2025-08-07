@@ -4,8 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose"); // ✅ Import mongoose
 const cookieParser = require("cookie-parser");
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
+
 
 // Middlewares
 // app.use(cors(   {
@@ -20,7 +19,8 @@ app.use(cors(   {
   credentials: true
 }));
 
-
+app.use(express.json());
+app.use(cookieParser());
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI)
