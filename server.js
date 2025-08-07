@@ -4,6 +4,8 @@ const cors = require("cors");
 const mongoose = require("mongoose"); // ✅ Import mongoose
 const cookieParser = require("cookie-parser");
 const app = express();
+app.use(express.json());
+app.use(cookieParser());
 
 // Middlewares
 // app.use(cors(   {
@@ -17,10 +19,8 @@ app.use(cors(   {
   origin: "https://thesumaya.com", // or wherever your React app runs
   credentials: true
 }));
-app.use(express.json());
 
 
-app.use(express.json());
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI)
@@ -29,7 +29,6 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use("/api/auth", require("./routes/sellerAuthRoutes"));
-app.use(cookieParser());
 
 
 // Start server
