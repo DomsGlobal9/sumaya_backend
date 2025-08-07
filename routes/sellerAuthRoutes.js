@@ -11,7 +11,7 @@ router.post('/login', loginSeller);
 router.post('/seller/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
-router.get('/protected', checkAuth, (req, res) => {
+router.get('/check-auth', checkAuth, (req, res) => {
   res.json({ message: 'You are authenticated', user: req.user });
 });
 
