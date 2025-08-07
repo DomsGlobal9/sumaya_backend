@@ -123,10 +123,6 @@ exports.loginSeller = async (req, res) => {
       });
     }
 
-     if (!seller || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
     // Trim whitespace
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
