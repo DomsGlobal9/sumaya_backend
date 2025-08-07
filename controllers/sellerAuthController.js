@@ -114,9 +114,7 @@ exports.registerSeller = async (req, res) => {
 };
 
 exports.loginSeller = async (req, res) => {
-  console.log(req.body)
   const { email, password, role } = req.body;
-
   try {
     // Input validation - only email and password are required for login
     if (!email || !password) {
@@ -189,7 +187,14 @@ exports.loginSeller = async (req, res) => {
     );
 
     // Return success response
-    res.status(200).json({ 
+    // res.status(200)
+
+  res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+}).status(200).json({ 
       message: "Login successful",
       token, 
       seller: { 
@@ -199,6 +204,10 @@ exports.loginSeller = async (req, res) => {
         role: seller.role
       } 
     });
+
+
+;
+
 
   } catch (error) {
     console.error("Login error:", error);
@@ -321,4 +330,13 @@ exports.resetPassword = async (req, res) => {
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+     sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 };

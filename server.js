@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose"); // ✅ Import mongoose
-
+const cookieParser = require("cookie-parser");
 const app = express();
 
 // Middlewares
@@ -20,18 +20,6 @@ app.use(cors(   {
 app.use(express.json());
 
 
-// const allowedOrigins = ["https://thesumaya.com", "http://localhost:5173"];
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true
-// }));
-
 app.use(express.json());
 
 // Connect to DB
@@ -41,6 +29,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use("/api/auth", require("./routes/sellerAuthRoutes"));
+app.use(cookieParser());
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
