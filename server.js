@@ -19,8 +19,9 @@ app.use(cors(   {
   credentials: true
 }));
 
-app.use(express.json());
+// app.use(express.json());
 app.use(cookieParser());
+app.use(express.json({ limit: "10mb" })); // for base64 images
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI)
@@ -29,7 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use("/api/auth", require("./routes/sellerAuthRoutes"));
-
+app.use("/api/tryon", require("./routes/tryon"));
 
 // Start server
 const PORT = process.env.PORT || 5000;
