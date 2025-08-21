@@ -19,6 +19,7 @@ exports.getProductById = async (req, res) => {
   }
 };
 
+
 exports.createProduct = async (req, res) => {
   const product = new Product(req.body);
   try {
