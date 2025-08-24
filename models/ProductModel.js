@@ -66,84 +66,55 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   articleNumber: {
     type: String,
-    required: [true, 'Article number is required'],
-    unique: true,
-    trim: true
+    required: true,
+    unique: true,  // Acts as SKU
   },
   category: {
     type: String,
-    required: [true, 'Category is required'],
-    trim: true
+    required: true,  // e.g., "3PC Kurthi", "Cord set"
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
-    trim: true
-  },
-  vendor: {
-    type: String,
-    required: [true, 'Vendor is required'],
-    trim: true
-  },
-  sizes: {
-    type: {
-      M: { type: String, enum: ['Available', 'Out of Stock'], default: 'Available' },
-      L: { type: String, enum: ['Available', 'Out of Stock'], default: 'Available' },
-      XL: { type: String, enum: ['Available', 'Out of Stock'], default: 'Available' },
-      XXL: { type: String, enum: ['Available', 'Out of Stock'], default: 'Available' },
-      '3XL': { type: String, enum: ['Available', 'Out of Stock'], default: 'Available' }
-    },
     required: true,
-    default: {
-      M: 'Available',
-      L: 'Available',
-      XL: 'Available',
-      XXL: 'Available',
-      '3XL': 'Available'
-    }
-  },
-  stockValidation: {
-    type: String,
-    enum: ['Validated', 'Do Not Sell', 'Invalidated'],
-    default: 'Validated',
-    required: [true, 'Stock validation status is required']
-  },
-  sellingLink: {
-    type: String,
-    required: [true, 'Selling link is required'],
-    trim: true
-  },
-  fastSelling: {
-    type: Number,
-    required: [true, 'Fast selling price is required'],
-    min: [0, 'Fast selling price cannot be negative']
-  },
-  commission: {
-    type: Number,
-    required: [true, 'Commission is required'],
-    min: [0, 'Commission cannot be negative']
-  },
-  title: {
-    type: String,
-    default: 'Collections',
-    trim: true
-  },
-  productId: {
-    type: Number,
-    required: [true, 'Product ID is required'],
-    unique: true,
-    trim: true
   },
   designPattern: {
     type: String,
-    trim: true
+    required: true,  // Extracted from description
   },
   color: {
     type: String,
-    trim: true
-  }
-}, {
-  timestamps: true // Adds createdAt and updatedAt fields for tracking
-});
+    required: true,  // Extracted from description
+  },
+  availableSizes: {
+    type: [String],  // Array e.g., ["M", "L", "XL"]
+    required: true,
+  },
+  stockValidation: {
+    type: String,
+    default: 'Validated',
+  },
+  images: [
+    {
+      url: { type: String, required: true },
+      altText: { type: String, default: 'Product Image' },
+    },
+  ],
+  sellingPrice: {
+    type: Number,
+    required: true,
+  },
+  sellerCommission: {
+    type: Number,
+    required: true,
+  },
+  displayMRP: {
+    type: Number,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+}, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

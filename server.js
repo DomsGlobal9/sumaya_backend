@@ -1,10 +1,11 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const productRoutes = require('./routes/productRoutes');
 const mongoose = require("mongoose"); // ✅ Import mongoose
 const cookieParser = require("cookie-parser");
 const app = express();
-
+const cartRoutes = require("./routes/cartRoutes");
 
 // Middlewares
 // app.use(cors(   {
@@ -32,7 +33,9 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/auth", require("./routes/sellerAuthRoutes"));
 app.use("/api/tryon", require("./routes/tryon"));
 // Mount routes
-app.use('/api/products', require("./routes/productRoutes"));
+// app.use('/api/products', require("./routes/productRoutes"));
+app.use('/api/products', productRoutes);
+app.use("/api/cart", cartRoutes)
 // app.use('/api/cart', require("./routes/cartRoutes"));
 // Start server
 const PORT = process.env.PORT || 5000;

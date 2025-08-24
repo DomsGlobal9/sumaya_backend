@@ -113,125 +113,161 @@ exports.registerSeller = async (req, res) => {
   }
 };
 
+// exports.loginSeller = async (req, res) => {
+//   const { email, password, role } = req.body;
+//   try {
+//     // Input validation - only email and password are required for login
+//     if (!email || !password) {
+//       return res.status(400).json({ 
+//         message: "Email and password are required" 
+//       });
+//     }
+
+//     // Trim whitespace
+//     const trimmedEmail = email.trim();
+//     const trimmedPassword = password.trim();
+
+//     if (!trimmedEmail || !trimmedPassword) {
+//       return res.status(400).json({ 
+//         message: "Email and password cannot be empty" 
+//       });
+//     }
+
+//     // Validate email format
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!emailRegex.test(trimmedEmail)) {
+//       return res.status(400).json({ 
+//         message: "Please provide a valid email address" 
+//       });
+//     }
+
+//     // Find user by email (case insensitive)
+//     const seller = await Seller.findOne({ 
+//       email: trimmedEmail.toLowerCase() 
+//     });
+
+//     if (!seller) {
+//       return res.status(400).json({ 
+//         message: "Invalid credentials" 
+//       });
+//     }
+
+//     // Verify password
+//     const isMatch = await bcrypt.compare(trimmedPassword, seller.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ 
+//         message: "Invalid credentials" 
+//       });
+//     }
+
+//     // Optional: Verify role matches if role is provided
+//     if (role && seller.role !== role) {
+//       return res.status(400).json({ 
+//         message: `This account is not registered as a ${role}` 
+//       });
+//     }
+
+//     // Check if JWT_SECRET exists
+//     if (!process.env.JWT_SECRET) {
+//       console.error('JWT_SECRET is not defined in environment variables');
+//       return res.status(500).json({ 
+//         message: "Server configuration error" 
+//       });
+//     }
+
+//     // Generate JWT token
+//     const token = jwt.sign(
+//       { 
+//         id: seller._id, 
+//         email: seller.email,
+//         role: seller.role 
+//       }, 
+//       process.env.JWT_SECRET, 
+//       { expiresIn: "7d" }
+//     );
+
+//     // Return success response
+//     // res.status(200)
+
+//   res.cookie("token", token, {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production",
+//   sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// }).status(200).json({ 
+//       message: "Login successful",
+//       token, 
+//       seller: { 
+//         id: seller._id, 
+//         email: seller.email, 
+//         username: seller.username,
+//         role: seller.role
+//       } 
+//     });
+
+
+// ;
+
+
+//   } catch (error) {
+//     console.error("Login error:", error);
+    
+//     // Handle JWT errors
+//     if (error.name === 'JsonWebTokenError') {
+//       return res.status(500).json({ 
+//         message: "Token generation failed" 
+//       });
+
+//     }
+    
+//     // Handle database errors
+//     if (error.name === 'MongoError' || error.name === 'MongooseError') {
+//       return res.status(500).json({ 
+//         message: "Database error occurred" 
+//       });
+//     }
+
+//     // Generic server error
+//     res.status(500).json({ 
+//       message: "Server error occurred during login",
+//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+//     });
+//   }
+// };
 exports.loginSeller = async (req, res) => {
-  const { email, password, role } = req.body;
   try {
-    // Input validation - only email and password are required for login
-    if (!email || !password) {
-      return res.status(400).json({ 
-        message: "Email and password are required" 
-      });
+    const { email, password, role } = req.body;
+    const seller = await Seller.findOne({ email });
+    if (!seller || seller.role !== role) {
+      return res.status(401).json({ message: "Invalid credentials or role" });
     }
-
-    // Trim whitespace
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-
-    if (!trimmedEmail || !trimmedPassword) {
-      return res.status(400).json({ 
-        message: "Email and password cannot be empty" 
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return res.status(400).json({ 
-        message: "Please provide a valid email address" 
-      });
-    }
-
-    // Find user by email (case insensitive)
-    const seller = await Seller.findOne({ 
-      email: trimmedEmail.toLowerCase() 
-    });
-
-    if (!seller) {
-      return res.status(400).json({ 
-        message: "Invalid credentials" 
-      });
-    }
-
-    // Verify password
-    const isMatch = await bcrypt.compare(trimmedPassword, seller.password);
+    const isMatch = await bcrypt.compare(password, seller.password);
     if (!isMatch) {
-      return res.status(400).json({ 
-        message: "Invalid credentials" 
-      });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-
-    // Optional: Verify role matches if role is provided
-    if (role && seller.role !== role) {
-      return res.status(400).json({ 
-        message: `This account is not registered as a ${role}` 
-      });
-    }
-
-    // Check if JWT_SECRET exists
-    if (!process.env.JWT_SECRET) {
-      console.error('JWT_SECRET is not defined in environment variables');
-      return res.status(500).json({ 
-        message: "Server configuration error" 
-      });
-    }
-
-    // Generate JWT token
     const token = jwt.sign(
-      { 
-        id: seller._id, 
-        email: seller.email,
-        role: seller.role 
-      }, 
-      process.env.JWT_SECRET, 
+      { id: seller._id, role: seller.role },
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-
-    // Return success response
-    // res.status(200)
-
-  res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-}).status(200).json({ 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }).status(200).json({
       message: "Login successful",
-      token, 
-      seller: { 
-        id: seller._id, 
-        email: seller.email, 
+      token,
+      seller: {
+        id: seller._id,
+        email: seller.email,
         username: seller.username,
-        role: seller.role
-      } 
+        role: seller.role,
+      },
     });
-
-
-;
-
-
   } catch (error) {
     console.error("Login error:", error);
-    
-    // Handle JWT errors
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(500).json({ 
-        message: "Token generation failed" 
-      });
-
-    }
-    
-    // Handle database errors
-    if (error.name === 'MongoError' || error.name === 'MongooseError') {
-      return res.status(500).json({ 
-        message: "Database error occurred" 
-      });
-    }
-
-    // Generic server error
-    res.status(500).json({ 
-      message: "Server error occurred during login",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ message: "Server error during login" });
   }
 };
 

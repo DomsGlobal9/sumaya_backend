@@ -65,3 +65,17 @@
 //     res.status(500).json({ message: err.message });
 //   }
 // });
+
+
+const express = require("express");
+const router = express.Router();
+const cartController = require("../controllers/cartController");
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.post("/add", authMiddleware, cartController.addToCart);
+router.post("/remove", authMiddleware, cartController.removeFromCart);
+router.post("/update", authMiddleware, cartController.updateCartItem);
+router.post("/clear", authMiddleware, cartController.clearCart);
+router.get("/", authMiddleware, cartController.getCart);
+
+module.exports = router;
