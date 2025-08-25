@@ -1,5 +1,5 @@
 const express = require('express');
-const { bulkUploadProducts } = require('../controllers/productController');  // Import controller
+const { bulkUploadProducts } = require('../controllers/ProductController');  // Import controller
 const Product = require('../models/ProductModel');
 const router = express.Router();
 
