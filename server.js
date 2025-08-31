@@ -33,14 +33,28 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 // app.use("/api/auth", require("./routes/sellerAuthRoutes"));
+app.use('/api', authRoutes); // This makes /api/register work
+// OR
+// app.use('/api/auth', authRoutes); // This makes /api/auth/register work
+
 app.use("/api/auth", authRoutes);
 app.use("/api/tryon", require("./routes/tryon"));
+//useing for theme
+const trackingRoutes = require('./routes/TrakingRoutes');
+const sellerPublicRoutes = require('./routes/SellerPublicRoute');
+
+
+app.use('/api/orders', require('./routes/orderRoutes'));
+// Add to your existing route configurations
+app.use('/api/tracking', trackingRoutes);
+app.use('/api/sellers', sellerPublicRoutes);
 // Mount routes
 // app.use('/api/products', require("./routes/productRoutes"));
 app.use('/api/products', productRoutes);
 app.use("/api/cart", cartRoutes)
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+// app.use('/api/profile',authRoutes)
 // app.use('/api/cart', require("./routes/cartRoutes"));
 // Start server
 const PORT = process.env.PORT || 5000;
