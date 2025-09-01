@@ -52,7 +52,7 @@
 
 // module.exports = router;
 
-
+const mongoose = require("mongoose");
 const express = require('express');
 const router = express.Router();
 const validateSellerInput = require('../middleware/validateSellerInput');
@@ -208,6 +208,117 @@ router.get('/profile/:id/bank-details', checkAuth, async (req, res) => {
 //   }
 // });
 
+// router.put('/profile/:id/bank-details', checkAuth, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     console.log('PUT /profile/:id/bank-details - Request:', { id, body: req.body });
+
+//     if (req.user.id !== id) {
+//       return res.status(403).json({ message: 'Access denied' });
+//     }
+
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({ message: 'Invalid seller ID' });
+//     }
+
+//     const { bankDetails } = req.body;
+
+//     if (!bankDetails) {
+//       return res.status(400).json({ message: 'Bank details are required' });
+//     }
+
+//     const { accountHolder, bankName, ifsc, accountNumber } = bankDetails;
+//     if (!accountHolder || !bankName || !ifsc || !accountNumber) {
+//       return res.status(400).json({
+//         message: 'Account holder name, bank name, IFSC code, and account number are required',
+//       });
+//     }
+
+//     const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+//     if (!ifscRegex.test(ifsc.toUpperCase())) {
+//       return res.status(400).json({ message: 'Invalid IFSC code format' });
+//     }
+
+//     if (bankDetails.pan) {
+//       const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+//       if (!panRegex.test(bankDetails.pan.toUpperCase())) {
+//         return res.status(400).json({ message: 'Invalid PAN number format' });
+//       }
+//     }
+
+//     if (bankDetails.aadhar) {
+//       const cleanAadhar = bankDetails.aadhar.replace(/\s/g, '');
+//       if (cleanAadhar.length !== 12 || !/^\d{12}$/.test(cleanAadhar)) {
+//         return res.status(400).json({ message: 'Invalid Aadhar number format' });
+//       }
+//     }
+
+//     if (mongoose.connection.readyState !== 1) {
+//       return res.status(500).json({ message: 'Database connection error' });
+//     }
+
+//     const seller = await Seller.findById(id);
+//     if (!seller) {
+//       return res.status(404).json({ message: 'Seller not found' });
+//     }
+
+//     // Update bank details
+//     seller.bankDetails = {
+//       accountHolder: bankDetails.accountHolder?.trim() || '',
+//       bankName: bankDetails.bankName?.trim() || '',
+//       ifsc: bankDetails.ifsc?.trim().toUpperCase() || '',
+//       accountNumber: bankDetails.accountNumber?.trim() || '',
+//       pan: bankDetails.pan?.trim().toUpperCase() || '',
+//       aadhar: bankDetails.aadhar?.trim().replace(/\s/g, '') || '',
+//     };
+
+//     // Log bank details for debugging
+//     console.log('Updated bank details before saving:', seller.bankDetails);
+
+//     // Update profile completion status
+//     seller.profileComplete = !!(
+//       seller.bankDetails.accountHolder &&
+//       seller.bankDetails.bankName &&
+//       seller.bankDetails.ifsc &&
+//       seller.bankDetails.accountNumber
+//     );
+
+//     if (typeof seller.updateProfileCompletionStatus === 'function') {
+//       seller.updateProfileCompletionStatus();
+//     } else {
+//       console.warn('updateProfileCompletionStatus is not defined on Seller model');
+//     }
+
+//     await seller.save();
+
+//     // Prepare response
+//     const updatedSellerData = seller.toObject();
+//     delete updatedSellerData.password;
+//     delete updatedSellerData.passwordResetToken;
+//     delete updatedSellerData.passwordResetExpires;
+
+//     res.json({
+//       message: 'Bank details updated successfully',
+//       bankDetails: updatedSellerData.bankDetails,
+//       userInfo: {
+//         username: updatedSellerData.username,
+//         shopName: updatedSellerData.shopName,
+//         email: updatedSellerData.email,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('Update bank details error:', {
+//       message: error.message,
+//       stack: error.stack,
+//       body: req.body,
+//       id: req.params.id,
+//     });
+//     res.status(500).json({
+//       message: 'Server error updating bank details',
+//       error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+//     });
+//   }
+// });
 router.put('/profile/:id/bank-details', checkAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -217,38 +328,44 @@ router.put('/profile/:id/bank-details', checkAuth, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid seller ID' });
+    }
+
     const { bankDetails } = req.body;
 
-    if (bankDetails) {
-      const { accountHolder, bankName, ifsc, accountNumber } = bankDetails;
-      if (!accountHolder || !bankName || !ifsc || !accountNumber) {
-        return res.status(400).json({
-          message: 'Account holder name, bank name, IFSC code, and account number are required',
-        });
-      }
+    if (!bankDetails) {
+      return res.status(400).json({ message: 'Bank details are required' });
+    }
 
-      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-      if (!ifscRegex.test(ifsc.toUpperCase())) {
-        return res.status(400).json({ message: 'Invalid IFSC code format' });
-      }
+    const { accountHolder, bankName, ifsc, accountNumber } = bankDetails;
+    if (!accountHolder || !bankName || !ifsc || !accountNumber) {
+      return res.status(400).json({
+        message: 'Account holder name, bank name, IFSC code, and account number are required',
+      });
+    }
 
-      if (bankDetails.pan) {
-        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        if (!panRegex.test(bankDetails.pan.toUpperCase())) {
-          return res.status(400).json({ message: 'Invalid PAN number format' });
-        }
-      }
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    if (!ifscRegex.test(ifsc.toUpperCase())) {
+      return res.status(400).json({ message: 'Invalid IFSC code format' });
+    }
 
-      if (bankDetails.aadhar) {
-        const cleanAadhar = bankDetails.aadhar.replace(/\s/g, '');
-        if (cleanAadhar.length !== 12 || !/^\d{12}$/.test(cleanAadhar)) {
-          return res.status(400).json({ message: 'Invalid Aadhar number format' });
-        }
+    if (bankDetails.pan) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (!panRegex.test(bankDetails.pan.toUpperCase())) {
+        return res.status(400).json({ message: 'Invalid PAN number format' });
       }
     }
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid seller ID' });
+    if (bankDetails.aadhar) {
+      const cleanAadhar = bankDetails.aadhar.replace(/\s/g, '');
+      if (cleanAadhar.length !== 12 || !/^\d{12}$/.test(cleanAadhar)) {
+        return res.status(400).json({ message: 'Invalid Aadhar number format' });
+      }
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(500).json({ message: 'Database connection error' });
     }
 
     const seller = await Seller.findById(id);
@@ -256,33 +373,35 @@ router.put('/profile/:id/bank-details', checkAuth, async (req, res) => {
       return res.status(404).json({ message: 'Seller not found' });
     }
 
+    // Update bank details
     seller.bankDetails = {
-      accountHolder: bankDetails.accountHolder?.trim(),
-      bankName: bankDetails.bankName?.trim(),
-      ifsc: bankDetails.ifsc?.trim().toUpperCase(),
-      accountNumber: bankDetails.accountNumber?.trim(),
-      pan: bankDetails.pan?.trim().toUpperCase(),
-      aadhar: bankDetails.aadhar?.trim(),
+      accountHolder: bankDetails.accountHolder?.trim() || '',
+      bankName: bankDetails.bankName?.trim() || '',
+      ifsc: bankDetails.ifsc?.trim().toUpperCase() || '',
+      accountNumber: bankDetails.accountNumber?.trim() || '',
+      pan: bankDetails.pan?.trim().toUpperCase() || '',
+      aadhar: bankDetails.aadhar?.trim().replace(/\s/g, '') || '',
     };
 
-    // Ensure profileComplete is a boolean before saving
+    // Log bank details for debugging
+    console.log('Updated bank details before saving:', seller.bankDetails);
+
+    // Update profile completion status - FIXED: Only set boolean value
     seller.profileComplete = !!(
-      seller.bankDetails?.accountHolder &&
-      seller.bankDetails?.bankName &&
-      seller.bankDetails?.ifsc &&
-      seller.bankDetails?.accountNumber
+      seller.bankDetails.accountHolder &&
+      seller.bankDetails.bankName &&
+      seller.bankDetails.ifsc &&
+      seller.bankDetails.accountNumber
     );
 
-    // Call updateProfileCompletionStatus if it exists
-    if (typeof seller.updateProfileCompletionStatus === 'function') {
-      seller.updateProfileCompletionStatus();
-    } else {
-      console.warn('updateProfileCompletionStatus is not defined');
-    }
+    // REMOVED: This was causing the error by overriding profileComplete with wrong value
+    // if (typeof seller.updateProfileCompletionStatus === 'function') {
+    //   seller.updateProfileCompletionStatus();
+    // }
 
     await seller.save();
-    console.log('Bank details saved:', seller.bankDetails);
 
+    // Prepare response
     const updatedSellerData = seller.toObject();
     delete updatedSellerData.password;
     delete updatedSellerData.passwordResetToken;
@@ -304,7 +423,10 @@ router.put('/profile/:id/bank-details', checkAuth, async (req, res) => {
       body: req.body,
       id: req.params.id,
     });
-    res.status(500).json({ message: 'Server error updating bank details', error: error.message });
+    res.status(500).json({
+      message: 'Server error updating bank details',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
   }
 });
 // Check if bank details are complete

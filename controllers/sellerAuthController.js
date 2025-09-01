@@ -1839,32 +1839,91 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// exports.loginSeller = async (req, res) => {
+//   try {
+//     const { email, password, role } = req.body;
+//     const seller = await Seller.findOne({ email });
+//     if (!seller || seller.role !== role) {
+//       return res.status(401).json({ message: "Invalid credentials or role" });
+//     }
+    
+//     // Use the schema method for password comparison
+//     const isMatch = await seller.comparePassword(password);
+//     if (!isMatch) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+    
+//     const token = jwt.sign(
+//       { id: seller._id, role: seller.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+//       maxAge: 7 * 24 * 60 * 60 * 1000,
+//     }).status(200).json({
+//       message: "Login successful",
+//       token,
+//       seller: {
+//         id: seller._id,
+//         email: seller.email,
+//         username: seller.username,
+//         role: seller.role,
+//         shopName: seller.shopName,
+//         profileComplete: seller.profileComplete,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Server error during login" });
+//   }
+// };
 exports.loginSeller = async (req, res) => {
   try {
+    // Input validation
     const { email, password, role } = req.body;
-    const seller = await Seller.findOne({ email });
-    if (!seller || seller.role !== role) {
-      return res.status(401).json({ message: "Invalid credentials or role" });
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'Email, password, and role are required' });
     }
-    
-    // Use the schema method for password comparison
+
+    // Find seller
+    const seller = await Seller.findOne({ email });
+    if (!seller) {
+      return res.status(401).json({ message: 'Invalid credentials or role' });
+    }
+
+    // Validate role
+    if (seller.role !== role) {
+      return res.status(401).json({ message: 'Invalid role for this account' });
+    }
+
+    // Compare password
     const isMatch = await seller.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
+    // Generate JWT with fallback secret
+    const secret = process.env.JWT_SECRET || 'default_secret_for_development_only';
+    if (!secret) {
+      throw new Error('JWT_SECRET is not configured');
+    }
     const token = jwt.sign(
       { id: seller._id, role: seller.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      secret,
+      { expiresIn: '7d' }
     );
-    res.cookie("token", token, {
+
+    // Set cookie and respond
+    res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     }).status(200).json({
-      message: "Login successful",
+      message: 'Login successful',
       token,
       seller: {
         id: seller._id,
@@ -1876,10 +1935,19 @@ exports.loginSeller = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error during login" });
+    console.error('Login error:', {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
+    });
+    // Ensure a JSON response is always sent
+    res.status(500).json({
+      message: 'Server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
   }
 };
+
 
 exports.forgotPassword = async (req, res) => {
   try {
@@ -1982,3 +2050,5 @@ exports.logout = (req, res) => {
   });
   res.status(200).json({ message: "Logged out successfully" });
 };
+
+
