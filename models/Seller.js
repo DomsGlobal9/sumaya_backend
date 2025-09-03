@@ -355,7 +355,7 @@ const sellerSchema = new mongoose.Schema({
   
   // Profile completion status
   profileComplete: {
-    type: Boolean,
+    type: Boolean, 
     default: false
   },
   

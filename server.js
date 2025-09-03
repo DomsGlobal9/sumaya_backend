@@ -9,6 +9,12 @@ const cartRoutes = require("./routes/cartRoutes");
 const authRoutes = require("./routes/sellerAuthRoutes");
 const orderRoutes = require('./routes/orderRoutes');
 const wishlistRoutes = require('./routes/WishlistRoutes');
+const userRoutes = require('./routes/userRoutes');
+const profileRoutes = require('./routes/sellerAuthRoutes');
+// const usercartRoutes = require('./routes/UserCartRoutes');
+// Import routes
+// const userRoutes = require('./routes/userRoutes');
+// const cartRoutes = require('./routes/UserCartRoute');
 // Middlewares
 // app.use(cors(   {
 //   origin: "http://localhost:5173", // or wherever your React app runs
@@ -40,14 +46,14 @@ app.use('/api', authRoutes); // This makes /api/register work
 app.use("/api/auth", authRoutes);
 app.use("/api/tryon", require("./routes/tryon"));
 //useing for theme
-const trackingRoutes = require('./routes/TrakingRoutes');
-const sellerPublicRoutes = require('./routes/SellerPublicRoute');
+// const trackingRoutes = require('./routes/TrakingRoutes');
+// const sellerPublicRoutes = require('./routes/SellerPublicRoute');
 
 
 app.use('/api/orders', require('./routes/orderRoutes'));
 // Add to your existing route configurations
-app.use('/api/tracking', trackingRoutes);
-app.use('/api/sellers', sellerPublicRoutes);
+// app.use('/api/tracking', trackingRoutes);
+// app.use('/api/sellers', sellerPublicRoutes);
 // Mount routes
 // app.use('/api/products', require("./routes/productRoutes"));
 app.use('/api/products', productRoutes);
@@ -57,6 +63,16 @@ app.use('/api/wishlist', wishlistRoutes);
 // app.use('/api/profile',authRoutes)
 // app.use('/api/cart', require("./routes/cartRoutes"));
 // Start server
+
+app.use('/api/profile/:id', profileRoutes);
+
+// Routes of user routes not seller
+app.use('/api/users', userRoutes);
+// app.use('/api/usercart',usercartRoutes)
+
+// app.use('/api/users', userRoutes); // Your existing user routes
+// app.use('/api/cart', cartRoutes); 
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
