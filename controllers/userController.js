@@ -326,6 +326,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/UserModel.js';
 // import UserCart from '../models/UserCartModel.js';
+// const UserCart = require('../models/UserCartModel.js');
+import UserCart from "../models/UserCartModel.js"
 // const jwt = require('jsonwebtoken');
 
 // Secret key for JWT (should be in .env file)
@@ -362,19 +364,19 @@ export const signup = async (req, res) => {
     // Create new user
     const newUser = await User.create({ username, email, password });
 
-    // Create empty cart for new user (only if UserCart model exists)
-    // try {
-    //   await UserCart.create({
-    //     userId: newUser._id,
-    //     items: [],
-    //     totalAmount: 0,
-    //     totalItems: 0
-    //   });
-    //   console.log(`✅ Cart created for user: ${newUser.username}`);
-    // } catch (cartError) {
-    //   console.log('⚠️ Cart creation skipped (UserCart model might not exist yet):', cartError.message);
-    //   // Don't fail signup if cart creation fails
-    // }
+   // Create empty cart for new user (only if UserCart model exists)
+    try {
+      await UserCart.create({
+        userId: newUser._id,
+        items: [],
+        totalAmount: 0,
+        totalItems: 0
+      });
+      console.log(`✅ Cart created for user: ${newUser.username}`);
+    } catch (cartError) {
+      console.log('⚠️ Cart creation skipped (UserCart model might not exist yet):', cartError.message);
+      // Don't fail signup if cart creation fails
+    }
 
     // Generate token
     const token = signToken(newUser._id);
@@ -483,6 +485,78 @@ export const verifyToken = async (req, res) => {
       success: false,
       message: 'Invalid token', 
       error: error.message 
+    });
+  }
+};
+
+export const getCart = async (req, res) => {
+  try {
+    const cart = await UserCart.findOne({ userId: req.user._id }).populate('items.productId');
+    if (!cart) {
+      return res.status(200).json({
+        success: true,
+        cart: { items: [], totalAmount: 0, totalItems: 0 },
+      });
+    }
+    res.status(200).json({
+      success: true,
+      cart,
+    });
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching cart',
+    });
+  }
+};
+
+export const addToCart = async (req, res) => {
+  try {
+    const { productId, quantity, size } = req.body;
+    if (!productId || !quantity) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID and quantity are required',
+      });
+    }
+
+    let cart = await UserCart.findOne({ userId: req.user._id });
+    if (!cart) {
+      cart = await UserCart.create({
+        userId: req.user._id,
+        items: [],
+        totalAmount: 0,
+        totalItems: 0,
+      });
+    }
+
+    const itemIndex = cart.items.findIndex(
+      (item) => item.productId.toString() === productId && item.size === size
+    );
+
+    if (itemIndex > -1) {
+      cart.items[itemIndex].quantity += quantity;
+    } else {
+      cart.items.push({ productId, quantity, size });
+    }
+
+    cart.totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    // Assuming product prices are fetched separately or stored in productId
+    // cart.totalAmount = ... (calculate based on product prices)
+
+    await cart.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Item added to cart',
+      cart,
+    });
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error adding to cart',
     });
   }
 };

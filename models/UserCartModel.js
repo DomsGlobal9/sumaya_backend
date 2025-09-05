@@ -1,167 +1,58 @@
-// // // ==================== UPDATED CART MODEL: UserCart.js ====================
-// // const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-// // const cartItemSchema = new mongoose.Schema({
-// //   productId: {
-// //     type: mongoose.Schema.Types.ObjectId,
-// //     ref: 'Product', // Make sure you have a Product model
-// //     required: true
-// //   },
-// //   quantity: {
-// //     type: Number,
-// //     required: true,
-// //     min: 1,
-// //     default: 1
-// //   },
-// //   size: {
-// //     type: String,
-// //     required: true,
-// //     default: 'M'
-// //   },
-// //   price: {
-// //     type: Number,
-// //     required: true,
-// //     min: 0
-// //   },
-// //   // Store product details for faster access (denormalization)
-// //   productDetails: {
-// //     name: String,
-// //     brand: String,
-// //     image: String,
-// //     stock: Number,
-// //     sellingPrice: Number,
-// //     displayMRP: Number
-// //   },
-// //   addedAt: {
-// //     type: Date,
-// //     default: Date.now
-// //   }
-// // });
+const cartItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product', // Reference to Product model
+    required: [true, 'Product ID is required'],
+  },
+  quantity: {
+    type: Number,
+    required: [true, 'Quantity is required'],
+    min: [1, 'Quantity must be at least 1'],
+  },
+  size: {
+    type: String,
+    required: [true, 'Size is required'],
+    enum: ['S', 'M', 'L', 'XL', 'XXL'], // Match availableSizes in ProductModel
+  },
+});
 
-// // const userCartSchema = new mongoose.Schema({
-// //   userId: {
-// //     type: mongoose.Schema.Types.ObjectId,
-// //     ref: 'User', // References your existing User model
-// //     required: true,
-// //     unique: true // One cart per user
-// //   },
-// //   items: [cartItemSchema],
-// //   totalAmount: {
-// //     type: Number,
-// //     default: 0
-// //   },
-// //   totalItems: {
-// //     type: Number,
-// //     default: 0
-// //   },
-// //   lastModified: {
-// //     type: Date,
-// //     default: Date.now
-// //   }
-// // }, {
-// //   timestamps: true // Adds createdAt and updatedAt automatically
-// // });
+const userCartSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to User model
+    required: [true, 'User ID is required'],
+    unique: true, // One cart per user
+  },
+  items: [cartItemSchema],
+  totalAmount: {
+    type: Number,
+    default: 0,
+  },
+  totalItems: {
+    type: Number,
+    default: 0,
+  },
+}, {
+  timestamps: true,
+});
 
-// // // Calculate totals before saving
-// // userCartSchema.pre('save', function(next) {
-// //   if (this.items && this.items.length > 0) {
-// //     this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);
-// //     this.totalAmount = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-// //   } else {
-// //     this.totalItems = 0;
-// //     this.totalAmount = 0;
-// //   }
-// //   this.lastModified = new Date();
-// //   next();
-// // });
+// Pre-save middleware to update totalAmount and totalItems
+userCartSchema.pre('save', async function (next) {
+  // Populate productId to access sellingPrice
+  await this.populate('items.productId');
 
-// // // Indexes for better performance
-// // userCartSchema.index({ userId: 1 });
-// // userCartSchema.index({ 'items.productId': 1 });
-// // userCartSchema.index({ lastModified: 1 });
+  // Calculate totalItems and totalAmount
+  this.totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
+  this.totalAmount = this.items.reduce((sum, item) => {
+    const price = item.productId?.sellingPrice || 0;
+    return sum + price * item.quantity;
+  }, 0);
 
-// // module.exports = mongoose.model('UserCart', userCartSchema);
+  next();
+});
 
+const UserCart = mongoose.model('UserCart', userCartSchema);
 
-// // ==================== MODEL: UserCart.js ====================
-// const mongoose = require('mongoose');
-
-// const cartItemSchema = new mongoose.Schema({
-//   productId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'Product',
-//     required: true
-//   },
-//   quantity: {
-//     type: Number,
-//     required: true,
-//     min: 1,
-//     default: 1
-//   },
-//   size: {
-//     type: String,
-//     required: true,
-//     default: 'M'
-//   },
-//   price: {
-//     type: Number,
-//     required: true,
-//     min: 0
-//   },
-//   // Store product details for faster access
-//   productDetails: {
-//     name: String,
-//     brand: String,
-//     image: String,
-//     stock: Number,
-//     sellingPrice: Number,
-//     displayMRP: Number
-//   },
-//   addedAt: {
-//     type: Date,
-//     default: Date.now
-//   }
-// });
-
-// const userCartSchema = new mongoose.Schema({
-//   userId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'User',
-//     required: true,
-//     unique: true
-//   },
-//   items: [cartItemSchema],
-//   totalAmount: {
-//     type: Number,
-//     default: 0
-//   },
-//   totalItems: {
-//     type: Number,
-//     default: 0
-//   },
-//   lastModified: {
-//     type: Date,
-//     default: Date.now
-//   }
-// }, {
-//   timestamps: true
-// });
-
-// // Calculate totals before saving
-// userCartSchema.pre('save', function(next) {
-//   if (this.items && this.items.length > 0) {
-//     this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);
-//     this.totalAmount = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-//   } else {
-//     this.totalItems = 0;
-//     this.totalAmount = 0;
-//   }
-//   this.lastModified = new Date();
-//   next();
-// });
-
-// // Index for better performance
-// userCartSchema.index({ userId: 1 });
-// userCartSchema.index({ 'items.productId': 1 });
-
-// module.exports = mongoose.model('UserCart', userCartSchema);
+module.exports = UserCart;

@@ -1,34 +1,40 @@
-// const jwt = require('jsonwebtoken');
-// const User = require('../models/User'); // Your User model
+const jwt = require('jsonwebtoken');
+const User = require('../models/UserModel');
 
-// const UserauthMiddleware = async (req, res, next) => {
-//   try {
-//     const token = req.header('Authorization')?.replace('Bearer ', '');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
+
+const UserauthMiddleware = async (req, res, next) => {
+  try {
+    const authHeader = req.header('Authorization');
+    console.log(authHeader,"headert");
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'No token, authorization denied' 
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = jwt.verify(token, JWT_SECRET);
     
-//     if (!token) {
-//       return res.status(401).json({
-//         success: false,
-//         message: 'Access denied. No token provided.'
-//       });
-//     }
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid token - user not found' 
+      });
+    }
 
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const user = await User.findById(decoded.id);
+    req.user = user; // This is what your controller expects
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ 
+      success: false,
+      message: 'Token is not valid',
+      error: error.message 
+    });
+  }
+};
 
-//     if (!user) {
-//       return res.status(401).json({
-//         success: false,
-//         message: 'Invalid token. User not found.'
-//       });
-//     }
-
-//     req.user = user;
-//     next();
-//   } catch (error) {
-//     res.status(401).json({
-//       success: false,
-//       message: 'Invalid token.',
-//       error: error.message
-//     });
-//   }
-// };
+module.exports = UserauthMiddleware;
