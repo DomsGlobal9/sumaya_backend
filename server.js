@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Middlewares
 app.use(cors({
-  origin: ["https://thesumaya.com", "http://localhost:5173","https://sumaya-admin.vercel.app/"],
+  origin: ["https://thesumaya.com", "http://localhost:5173","https://sumaya-admin.vercel.app/","https://sumaya-admin-git-main-domsgloals-projects.vercel.app/"],
   credentials: true
 }));
 
