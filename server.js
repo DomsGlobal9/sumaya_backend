@@ -17,8 +17,27 @@ const userCartRoutes = require('./routes/UserCartRoutes');
 app.use(express.json());
 
 // Middlewares
+// app.use(cors({
+//   origin: ["https://thesumaya.com", "http://localhost:5173","https://sumaya-admin.vercel.app/","https://sumaya-admin-git-main-domsgloals-projects.vercel.app/"],
+//   credentials: true
+// }));
+const allowedOrigins = [
+  "https://thesumaya.com", 
+  "http://localhost:5173",
+  "https://sumaya-admin.vercel.app/",
+  "https://sumaya-admin-git-main-domsgloals-projects.vercel.app/"
+];
+
 app.use(cors({
-  origin: ["https://thesumaya.com", "http://localhost:5173","https://sumaya-admin.vercel.app/","https://sumaya-admin-git-main-domsgloals-projects.vercel.app/"],
+  origin: function(origin, callback){
+    // Allow requests with no origin like Curl or Postman
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
