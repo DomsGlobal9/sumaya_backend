@@ -62,12 +62,17 @@
 
 
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid'); 
 
 const productSchema = new mongoose.Schema({
   articleNumber: {
     type: String,
     required: true,
     unique: true,  // Acts as SKU
+      default: function () {
+      // Generate unique SKU string; customize prefix or format as you want
+      return 'AKU-' + uuidv4().split('-')[0].toUpperCase();
+    }
   },
   category: {
     type: String,
