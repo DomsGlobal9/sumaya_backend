@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const profileRoutes = require('./routes/sellerAuthRoutes');
 
 const userCartRoutes = require('./routes/UserCartRoutes');
+const userOrderRoutes= require('./routes/UserOrderRoutes')
 
 app.use(express.json());
 
@@ -54,6 +55,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use('/api', authRoutes); // This makes /api/register work
 
+
 app.use("/api/auth", authRoutes);
 app.use("/api/tryon", require("./routes/tryon"));
 //useing for theme
@@ -66,11 +68,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 
 
-app.use('/api/profile/:id', profileRoutes);
+app.use('/api', profileRoutes);
 
 // Routes of user routes not seller
 app.use('/api/users', userRoutes);
 app.use('/api/usercart', userCartRoutes);
+app.use('/api',userOrderRoutes);
 
 
 const PORT = process.env.PORT || 5000;

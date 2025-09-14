@@ -28,6 +28,7 @@ const checkAuth = (req, res, next) => {
     if (token && token.startsWith('Bearer ')) {
       token = token.slice(7);
       console.log(token)
+
     } else if (req.cookies.token) {
       token = req.cookies.token;
     }
