@@ -77,7 +77,7 @@ router.post('/seller/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 
 // Profile routes (protected)
-router.get('/profile/:id', checkAuth, getProfile);
+router.get('/profile/:id', getProfile);
 router.put('/profile/:id', checkAuth, updateProfile);
 router.post('/complete-profile/:id', checkAuth, completeProfile);
 
